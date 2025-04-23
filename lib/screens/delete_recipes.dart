@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../data/recipe_data.dart';
 
 class DeleteRecipesScreen extends StatefulWidget {
-  const DeleteRecipesScreen({Key? key}) : super(key: key);
+  const DeleteRecipesScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _DeleteRecipesScreenState createState() => _DeleteRecipesScreenState();
 }
 
@@ -33,8 +34,10 @@ class _DeleteRecipesScreenState extends State<DeleteRecipesScreen> {
                   // Save the updated list to file
                   await saveRecipesToFile();
 
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(ctx);
 
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Recipe deleted successfully."),

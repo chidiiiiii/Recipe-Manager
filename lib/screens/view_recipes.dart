@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/recipe_data.dart';
 import '../models/recipe.dart';
+import 'edit_recipes.dart'; // Import this!
 
 class ViewRecipesScreen extends StatelessWidget {
   const ViewRecipesScreen({super.key});
@@ -18,7 +19,13 @@ class ViewRecipesScreen extends StatelessWidget {
       appBar: AppBar(title: Text("Recipes")),
       body:
           recipeList.isEmpty
-              ? Center(child: Text("No recipes added."))
+              ? Center(
+                child: Text(
+                  "No recipes added.\nTap the 'Add Recipe' button to get started!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+              )
               : ListView(
                 children:
                     groupedRecipes.entries.map((entry) {
@@ -36,50 +43,42 @@ class ViewRecipesScreen extends StatelessWidget {
                             child: Text(
                               category,
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: 22, // Slightly larger font size
                                 fontWeight: FontWeight.bold,
+                                color: Colors.green, // Category color
                               ),
                             ),
                           ),
-                          ...recipes.map(
-                            (recipe) => ListTile(
-                              title: Text(recipe.name),
-                              onTap:
-                                  () => showDialog(
-                                    context: context,
-                                    builder:
-                                        (_) => AlertDialog(
-                                          title: Text(recipe.name),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "Category: ${recipe.category}",
-                                              ),
-                                              SizedBox(height: 8),
-                                              Text(
-                                                "Ingredients:\n${recipe.ingredients.join(', ')}",
-                                              ),
-                                              SizedBox(height: 8),
-                                              Text(
-                                                "Instructions:\n${recipe.instructions}",
-                                              ),
-                                            ],
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed:
-                                                  () => Navigator.pop(context),
-                                              child: Text("Close"),
-                                            ),
-                                          ],
-                                        ),
+                          ...recipes.map((recipe) {
+                            final index = recipeList.indexOf(recipe);
+                            return Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16,
                                   ),
-                            ),
-                          ),
-                          Divider(),
+                                  tileColor:
+                                      Colors
+                                          .white, // Background color for each recipe
+                                  title: Text(recipe.name),
+                                  trailing: Icon(Icons.edit),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => EditRecipeForm(
+                                              recipe: recipe,
+                                              index: index,
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Divider(), // Divider between recipes
+                              ],
+                            );
+                          }),
                         ],
                       );
                     }).toList(),

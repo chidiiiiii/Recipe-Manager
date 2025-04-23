@@ -6,9 +6,10 @@ class EditRecipeForm extends StatefulWidget {
   final Recipe recipe;
   final int index;
 
-  EditRecipeForm({required this.recipe, required this.index});
+  const EditRecipeForm({super.key, required this.recipe, required this.index});
 
   @override
+  // ignore: library_private_types_in_public_api
   _EditRecipeFormState createState() => _EditRecipeFormState();
 }
 
@@ -40,6 +41,19 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
   }
 
   Future<void> _saveChanges() async {
+    // Validate form
+    if (_nameController.text.isEmpty ||
+        _ingredientsController.text.isEmpty ||
+        _instructionsController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please fill in all fields before saving."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final updatedRecipe = Recipe(
       name: _nameController.text,
       category: _selectedCategory,
@@ -54,10 +68,13 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
 
     await saveRecipesToFile(); // Save to JSON file
 
-    Navigator.pop(context);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Recipe updated successfully.")));
+    // Ensure context is still valid before calling showSnackBar
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Recipe updated successfully.")));
+    }
   }
 
   @override

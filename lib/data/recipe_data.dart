@@ -21,9 +21,8 @@ Future<void> loadRecipesFromFile() async {
       final jsonData = json.decode(contents) as List;
       recipeList = jsonData.map((item) => Recipe.fromJson(item)).toList();
     }
-  } catch (e) {
-    print("Error loading recipes: $e");
-  }
+    // ignore: empty_catches
+  } catch (e) {}
 }
 
 // Helper function to get the path to the local JSON file
