@@ -19,16 +19,17 @@ classDiagram
     class Recipe {
         - String name
         - String category
-        - List<String> ingredients
+        - List~String~ ingredients
         - String instructions
 
-        + getName()
-        + setName(String name)
-        + getCategory()
-        + setCategory(String category)
-        + getIngredients()
-        + setIngredients(List<String> ingredients)
-        + getInstructions()
-        + setInstructions(String instructions)
+        + String getName()
+        + void setName(String name)
+        + String getCategory()
+        + void setCategory(String category)
+        + List~String~ getIngredients()
+        + void setIngredients(List~String~ ingredients)
+        + String getInstructions()
+        + void setInstructions(String instructions)
     }
+
 ```
