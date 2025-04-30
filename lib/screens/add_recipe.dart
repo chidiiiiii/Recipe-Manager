@@ -12,12 +12,28 @@ class AddRecipeScreen extends StatefulWidget {
 
 class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final nameController = TextEditingController();
-  final ingredientsController = TextEditingController();
   final instructionsController = TextEditingController();
-  String selectedCategory = "Breakfast";
+  final ingredientNameController = TextEditingController();
+  final ingredientQuantityController = TextEditingController();
 
-  // Form key for validation
+  final List<Map<String, String>> ingredients = [];
+  String selectedCategory = "Breakfast";
   final _formKey = GlobalKey<FormState>();
+
+  void _addIngredient() {
+    final ingredientName = ingredientNameController.text.trim();
+    final ingredientQuantity = ingredientQuantityController.text.trim();
+    if (ingredientName.isNotEmpty && ingredientQuantity.isNotEmpty) {
+      setState(() {
+        ingredients.add({
+          'name': ingredientName,
+          'quantity': ingredientQuantity,
+        });
+        ingredientNameController.clear();
+        ingredientQuantityController.clear();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,13 +58,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               DropdownButtonFormField<String>(
                 value: selectedCategory,
                 onChanged: (value) => setState(() => selectedCategory = value!),
-                items:
-                    ["Breakfast", "Lunch", "Dinner"]
-                        .map(
-                          (cat) =>
-                              DropdownMenuItem(value: cat, child: Text(cat)),
-                        )
-                        .toList(),
+                items: ["Breakfast", "Lunch", "Dinner"]
+                    .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                    .toList(),
                 decoration: InputDecoration(labelText: "Category"),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -57,19 +69,55 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   return null;
                 },
               ),
-              TextFormField(
-                controller: ingredientsController,
-                decoration: InputDecoration(
-                  labelText: "Ingredients (comma separated)",
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter ingredients';
-                  }
-                  return null;
-                },
+              SizedBox(height: 16),
+              Text("Ingredients", style: TextStyle(fontWeight: FontWeight.bold)),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: ingredientNameController,
+                      decoration: InputDecoration(hintText: "Ingredient Name"),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: ingredientQuantityController,
+                      decoration: InputDecoration(hintText: "Quantity"),
+                      onFieldSubmitted: (_) => _addIngredient(),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: _addIngredient,
+                  ),
+                ],
               ),
+              Wrap(
+                spacing: 8,
+                children: ingredients
+                    .map(
+                      (ingredient) => Chip(
+                        label: Text('${ingredient['name']} (${ingredient['quantity']})'),
+                        deleteIcon: Icon(Icons.close),
+                        onDeleted: () {
+                          setState(() {
+                            ingredients.remove(ingredient);
+                          });
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
+              if (ingredients.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    "Please add at least one ingredient",
+                    style: TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+              SizedBox(height: 16),
               TextFormField(
                 controller: instructionsController,
                 decoration: InputDecoration(labelText: "Instructions"),
@@ -85,32 +133,23 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               ElevatedButton(
                 child: Text("Save"),
                 onPressed: () async {
-                  // Validate form fields
-                  if (_formKey.currentState?.validate() ?? false) {
-                    // Create and add the new recipe
+                  if ((_formKey.currentState?.validate() ?? false) &&
+                      ingredients.isNotEmpty) {
                     recipeList.add(
                       Recipe(
                         name: nameController.text,
                         category: selectedCategory,
-                        ingredients:
-                            ingredientsController.text
-                                .split(',')
-                                .map((e) => e.trim())
-                                .toList(),
+                        ingredients: ingredients.map((ingredient) {
+                          return '${ingredient['name']} (${ingredient['quantity']})';
+                        }).toList(),
                         instructions: instructionsController.text,
                       ),
                     );
-
-                    // Save the updated list to file
                     await saveRecipesToFile();
-
-                    // Show success message
                     // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Recipe saved successfully.")),
                     );
-
-                    // Pop the screen after saving
                     // ignore: use_build_context_synchronously
                     Navigator.pop(context);
                   }
