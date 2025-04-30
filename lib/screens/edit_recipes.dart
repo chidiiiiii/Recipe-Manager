@@ -15,8 +15,6 @@ class EditRecipeForm extends StatefulWidget {
   const EditRecipeForm({super.key, required this.recipe, required this.index});
 
   @override
-  
-  // ignore: library_private_types_in_public_api
   _EditRecipeFormState createState() => _EditRecipeFormState();
 }
 
@@ -26,7 +24,7 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
   late TextEditingController _ingredientQuantityController;
   late TextEditingController _instructionsController;
 
-  List<String> _ingredients = [];
+  List<Map<String, String>> _ingredients = [];
   String _selectedCategory = 'Breakfast';
 
   @override
@@ -35,10 +33,15 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
     _nameController = TextEditingController(text: widget.recipe.name);
     _instructionsController = TextEditingController(text: widget.recipe.instructions);
 
-    // Initialize ingredients with only the name portion
-    _ingredients = widget.recipe.ingredients
-        .map((ingredient) => ingredient.split(' (')[0])
-        .toList();
+    // Parse ingredients into name-quantity pairs
+    _ingredients = widget.recipe.ingredients.map((ingredient) {
+      final match = RegExp(r'^(.*?)\s*\((.*?)\)$').firstMatch(ingredient);
+      if (match != null) {
+        return {'name': match.group(1)!, 'quantity': match.group(2)!};
+      } else {
+        return {'name': ingredient, 'quantity': ''};
+      }
+    }).toList();
 
     _selectedCategory = widget.recipe.category;
     _ingredientNameController = TextEditingController();
@@ -54,9 +57,23 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
     super.dispose();
   }
 
-  // Saves the updated recipe
+  void _addIngredient() {
+    final name = _ingredientNameController.text.trim();
+    final quantity = _ingredientQuantityController.text.trim();
+
+    if (name.isNotEmpty && quantity.isNotEmpty) {
+      setState(() {
+        _ingredients.add({'name': name, 'quantity': quantity});
+        _ingredientNameController.clear();
+        _ingredientQuantityController.clear();
+      });
+    }
+  }
+
   Future<void> _saveChanges() async {
-    if (_nameController.text.isEmpty || _ingredients.isEmpty || _instructionsController.text.isEmpty) {
+    if (_nameController.text.isEmpty ||
+        _ingredients.isEmpty ||
+        _instructionsController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Please fill in all fields before saving."),
@@ -66,10 +83,8 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
       return;
     }
 
-    // Combine each ingredient with quantity (if any)
     final updatedIngredients = _ingredients.map((ingredient) {
-      final quantity = _ingredientQuantityController.text.trim();
-      return quantity.isEmpty ? ingredient : '$ingredient ($quantity)';
+      return '${ingredient['name']} (${ingredient['quantity']})';
     }).toList();
 
     final updatedRecipe = Recipe(
@@ -79,34 +94,12 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
       instructions: _instructionsController.text,
     );
 
-    // Update the recipe in the global list
     setState(() {
       recipeList[widget.index] = updatedRecipe;
     });
 
     await saveRecipesToFile();
-
-    if (mounted) {
-      Navigator.pop(context, updatedRecipe); // Go back and return the updated recipe
-    }
-  }
-
-  // Adds a new ingredient to the list
-  void _addIngredient() {
-    final ingredientName = _ingredientNameController.text.trim();
-    final ingredientQuantity = _ingredientQuantityController.text.trim();
-
-    if (ingredientName.isNotEmpty) {
-      setState(() {
-        final formattedIngredient = ingredientQuantity.isNotEmpty
-            ? '$ingredientName ($ingredientQuantity)'
-            : ingredientName;
-
-        _ingredients.add(formattedIngredient);
-        _ingredientNameController.clear();
-        _ingredientQuantityController.clear();
-      });
-    }
+    if (mounted) Navigator.pop(context, updatedRecipe);
   }
 
   @override
@@ -118,13 +111,10 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Recipe name input
               TextField(
                 controller: _nameController,
                 decoration: InputDecoration(labelText: "Recipe Name"),
               ),
-
-              // Category dropdown
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 items: ['Breakfast', 'Lunch', 'Dinner']
@@ -133,8 +123,6 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
                 onChanged: (value) => setState(() => _selectedCategory = value!),
                 decoration: InputDecoration(labelText: "Category"),
               ),
-
-              // Ingredient input row
               Row(
                 children: [
                   Expanded(
@@ -156,35 +144,26 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
                   ),
                 ],
               ),
-
-              // Display current ingredients
               Wrap(
                 spacing: 8,
-                children: _ingredients
-                    .map(
-                      (ingredient) => Chip(
-                        label: Text(ingredient),
-                        deleteIcon: Icon(Icons.close),
-                        onDeleted: () {
-                          setState(() {
-                            _ingredients.remove(ingredient);
-                          });
-                        },
-                      ),
-                    )
-                    .toList(),
+                children: _ingredients.map((ingredient) {
+                  return Chip(
+                    label: Text('${ingredient['name']} (${ingredient['quantity']})'),
+                    deleteIcon: Icon(Icons.close),
+                    onDeleted: () {
+                      setState(() {
+                        _ingredients.remove(ingredient);
+                      });
+                    },
+                  );
+                }).toList(),
               ),
-
-              // Instructions input
               TextField(
                 controller: _instructionsController,
                 decoration: InputDecoration(labelText: "Instructions"),
                 maxLines: 4,
               ),
-
               SizedBox(height: 20),
-
-              // Save button
               ElevatedButton(
                 onPressed: _saveChanges,
                 child: Text("Save Changes"),
@@ -196,6 +175,3 @@ class _EditRecipeFormState extends State<EditRecipeForm> {
     );
   }
 }
-
-// Empty extension placeholder (can be removed or used later)
-extension on Map<String, String> {}
