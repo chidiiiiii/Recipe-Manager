@@ -12,18 +12,23 @@ class Recipe {
   });
 
   // Convert a Recipe object into a Map
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'category': category,
-    'ingredients': ingredients,
-    'instructions': instructions,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'category': category,
+      'ingredients': ingredients, // Make sure it's a List<String>
+      'instructions': instructions,
+    };
+  }
 
   // Create a Recipe object from a Map
-  factory Recipe.fromJson(Map<String, dynamic> json) => Recipe(
-    name: json['name'],
-    category: json['category'],
-    ingredients: List<String>.from(json['ingredients']),
-    instructions: json['instructions'],
-  );
+  factory Recipe.fromJson(Map<String, dynamic> json) {
+    return Recipe(
+      name: json['name'] as String,
+      category: json['category'] as String,
+      // Ensure we are converting ingredients to List<String>
+      ingredients: List<String>.from(json['ingredients'] as List),
+      instructions: json['instructions'] as String,
+    );
+  }
 }
