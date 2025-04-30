@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'add_recipe.dart';
 import 'view_recipes.dart';
 import 'delete_recipes.dart';
-import '../data/recipe_data.dart';
 
 class MainMenu extends StatelessWidget {
   const MainMenu({super.key});
@@ -12,12 +11,7 @@ class MainMenu extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("MY RECIPE MANAGER"),
-        backgroundColor: const Color.fromARGB(
-          255,
-          175,
-          76,
-          76,
-        ), // Custom AppBar color
+        backgroundColor: const Color.fromARGB(255, 175, 76, 119), // Custom AppBar color
       ),
       body: Center(
         child: Column(
