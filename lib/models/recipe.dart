@@ -1,3 +1,9 @@
+//recipe.dart
+//Chidi Emenike
+//4/30/25
+//My Recipe class model
+
+
 class Recipe {
   String name;
   String category;
