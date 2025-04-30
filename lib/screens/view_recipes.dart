@@ -1,3 +1,10 @@
+//view_recipes.dart
+//Chidi Emenike
+//4/30/25
+//View Recipes Screen
+
+
+
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart'; // for groupBy
 import '../data/recipe_data.dart';
