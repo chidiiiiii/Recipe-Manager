@@ -2,24 +2,31 @@ import 'package:flutter/material.dart';
 import '../data/recipe_data.dart';
 import '../models/recipe.dart';
 
+// Main screen to add a new recipe
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _AddRecipeScreenState createState() => _AddRecipeScreenState();
 }
 
 class _AddRecipeScreenState extends State<AddRecipeScreen> {
+  // Controllers to handle user input
   final nameController = TextEditingController();
   final instructionsController = TextEditingController();
   final ingredientNameController = TextEditingController();
   final ingredientQuantityController = TextEditingController();
 
+  // Stores the list of ingredients as maps with name and quantity
   final List<Map<String, String>> ingredients = [];
+
+  // Selected recipe category
   String selectedCategory = "Breakfast";
+
+  // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
+  // Adds a new ingredient to the list
   void _addIngredient() {
     final ingredientName = ingredientNameController.text.trim();
     final ingredientQuantity = ingredientQuantityController.text.trim();
@@ -45,6 +52,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           key: _formKey,
           child: ListView(
             children: [
+              // Recipe name input field
               TextFormField(
                 controller: nameController,
                 decoration: InputDecoration(labelText: "Recipe Name"),
@@ -55,6 +63,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   return null;
                 },
               ),
+              // Category dropdown (Breakfast, Lunch, Dinner)
               DropdownButtonFormField<String>(
                 value: selectedCategory,
                 onChanged: (value) => setState(() => selectedCategory = value!),
@@ -71,6 +80,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               ),
               SizedBox(height: 16),
               Text("Ingredients", style: TextStyle(fontWeight: FontWeight.bold)),
+              // Row to input ingredient name and quantity, and add to list
               Row(
                 children: [
                   Expanded(
@@ -93,6 +103,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   ),
                 ],
               ),
+              // Display the list of ingredients as chips
               Wrap(
                 spacing: 8,
                 children: ingredients
@@ -109,6 +120,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     )
                     .toList(),
               ),
+              // Warning if no ingredients are added
               if (ingredients.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -118,6 +130,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   ),
                 ),
               SizedBox(height: 16),
+              // Instructions input field
               TextFormField(
                 controller: instructionsController,
                 decoration: InputDecoration(labelText: "Instructions"),
@@ -130,6 +143,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 },
               ),
               SizedBox(height: 20),
+              // Save button: validate form, save recipe, show confirmation
               ElevatedButton(
                 child: Text("Save"),
                 onPressed: () async {
@@ -146,11 +160,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       ),
                     );
                     await saveRecipesToFile();
-                    // ignore: use_build_context_synchronously
+                    // Show a success message
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Recipe saved successfully.")),
                     );
-                    // ignore: use_build_context_synchronously
+                    // Navigate back to previous screen
                     Navigator.pop(context);
                   }
                 },
