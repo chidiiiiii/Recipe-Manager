@@ -1,3 +1,9 @@
+//main_menu.dart
+//Chidi Emenike
+//4/30/25
+//Main Menu Screen
+
+
 import 'package:flutter/material.dart';
 import 'add_recipe.dart';
 import 'view_recipes.dart';
